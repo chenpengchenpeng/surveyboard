@@ -3,6 +3,7 @@
 import { MapPin, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { AgentPanel } from "@/components/agent-panel";
 import { AmapMap } from "@/components/amap-map";
 import { TaskFlow } from "@/components/task-flow";
 import { Badge } from "@/components/ui/badge";
@@ -59,14 +60,14 @@ export function Workbench() {
           <div>
             <div className="text-sm font-semibold leading-none">Surveyboard</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              勘点任务台 · Next + shadcn + 高德
+              勘点任务台 · 地图 / 流程 / 业务助手
             </div>
           </div>
         </div>
         <Badge variant="secondary">{pins.length} 个点</Badge>
       </header>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)_280px]">
+      <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_320px]">
         <aside className="flex min-h-0 flex-col border-r bg-card">
           <div className="px-4 py-3 text-sm font-medium">勘点列表</div>
           <Separator />
@@ -147,54 +148,66 @@ export function Workbench() {
         </section>
 
         <aside className="flex min-h-0 flex-col border-l bg-card">
-          <div className="px-4 py-3 text-sm font-medium">属性</div>
+          <div className="flex max-h-[42%] min-h-[240px] flex-col overflow-hidden">
+            <div className="px-4 py-3 text-sm font-medium">属性</div>
+            <Separator />
+            <ScrollArea className="min-h-0 flex-1">
+              <div className="space-y-3 p-4">
+                {selected ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="pin-name">名称</Label>
+                      <Input
+                        id="pin-name"
+                        value={selected.name}
+                        onChange={(event) =>
+                          updateSelected({ name: event.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pin-note">备注</Label>
+                      <textarea
+                        id="pin-note"
+                        value={selected.note}
+                        onChange={(event) =>
+                          updateSelected({ note: event.target.value })
+                        }
+                        rows={2}
+                        className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                    <div className="font-mono text-xs text-muted-foreground">
+                      {selected.lng.toFixed(6)}, {selected.lat.toFixed(6)}
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={removeSelected}
+                    >
+                      <Trash2 />
+                      删除此点
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    选中左侧列表或地图上的点后，在这里改名称和备注。
+                  </p>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
           <Separator />
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="space-y-4 p-4">
-              {selected ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="pin-name">名称</Label>
-                    <Input
-                      id="pin-name"
-                      value={selected.name}
-                      onChange={(event) =>
-                        updateSelected({ name: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pin-note">备注</Label>
-                    <textarea
-                      id="pin-note"
-                      value={selected.note}
-                      onChange={(event) =>
-                        updateSelected({ note: event.target.value })
-                      }
-                      rows={5}
-                      className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                  </div>
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    <div>经度 {selected.lng.toFixed(6)}</div>
-                    <div>纬度 {selected.lat.toFixed(6)}</div>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={removeSelected}
-                  >
-                    <Trash2 />
-                    删除此点
-                  </Button>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  选中左侧列表或地图上的点后，在这里改名称和备注。
-                </p>
-              )}
-            </div>
-          </ScrollArea>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <AgentPanel
+              pins={pins}
+              selectedId={selectedId}
+              onApply={(next) => {
+                setPins(next.pins);
+                setSelectedId(next.selectedId);
+              }}
+            />
+          </div>
         </aside>
       </div>
     </div>
